@@ -15,4 +15,4 @@ I am quite new to MonoGame and still learning a lot about the engine itself and 
 
 Since MonoGame resources seem sparse and I appreciate every contribution (such as tutorials and such), I decided to try and get this old XNA code working again in a modern MonoGame project and share the code for people like me, who are searching for good demo projects.
 
-Btw, this project is using "net472" as the target framework, but you should be able to use .net core 3 (or higher) as well by changing the <TargetFramework> in the csproj file.
+Btw, this project is using "net472" as the target framework, but you should be able to use .net core 3 (or higher) as well by changing the TargetFramework in the csproj file to something like "netcoreapp3.1".
