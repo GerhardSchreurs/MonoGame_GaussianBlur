@@ -87,21 +87,21 @@ namespace GaussianBlur
     /// </summary>
     public class GaussianBlur
     {
-        private Game game;
-        private Effect effect;
-        private int radius;
-        private float amount;
-        private float sigma;
-        private float[] kernel;
-        private Vector2[] offsetsHoriz;
-        private Vector2[] offsetsVert;
+        private Game _game;
+        private Effect _effect;
+        private int _radius;
+        private float _amount;
+        private float _sigma;
+        private float[] _kernel;
+        private Vector2[] _offsetsHoriz;
+        private Vector2[] _offsetsVert;
 
         /// <summary>
         /// Returns the radius of the Gaussian blur filter kernel in pixels.
         /// </summary>
         public int Radius
         {
-            get { return radius; }
+            get { return _radius; }
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace GaussianBlur
         /// </summary>
         public float Amount
         {
-            get { return amount; }
+            get { return _amount; }
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace GaussianBlur
         /// </summary>
         public float Sigma
         {
-            get { return sigma; }
+            get { return _sigma; }
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace GaussianBlur
         /// </summary>
         public float[] Kernel
         {
-            get { return kernel; }
+            get { return _kernel; }
         }
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace GaussianBlur
         /// </summary>
         public Vector2[] TextureOffsetsX
         {
-            get { return offsetsHoriz; }
+            get { return _offsetsHoriz; }
         }
 
         /// <summary>
@@ -148,7 +148,7 @@ namespace GaussianBlur
         /// </summary>
         public Vector2[] TextureOffsetsY
         {
-            get { return offsetsVert; }
+            get { return _offsetsVert; }
         }
 
         /// <summary>
@@ -170,15 +170,15 @@ namespace GaussianBlur
         /// </summary>
         public GaussianBlur(Game game)
         {
-            this.game = game;
+            this._game = game;
 
             try
             {
-                effect = game.Content.Load<Effect>(@"Effects\GaussianBlur");
+                _effect = game.Content.Load<Effect>(@"Effects\GaussianBlur");
             }
             catch (ContentLoadException)
             {
-                effect = game.Content.Load<Effect>("GaussianBlur");
+                _effect = game.Content.Load<Effect>("GaussianBlur");
             }
         }
 
@@ -192,29 +192,29 @@ namespace GaussianBlur
         /// <param name="blurAmount">Used to calculate sigma.</param>
         public void ComputeKernel(int blurRadius, float blurAmount)
         {
-            radius = blurRadius;
-            amount = blurAmount;
+            _radius = blurRadius;
+            _amount = blurAmount;
 
-            kernel = null;
-            kernel = new float[radius * 2 + 1];
-            sigma = radius / amount;
+            _kernel = null;
+            _kernel = new float[_radius * 2 + 1];
+            _sigma = _radius / _amount;
 
-            float twoSigmaSquare = 2.0f * sigma * sigma;
+            float twoSigmaSquare = 2.0f * _sigma * _sigma;
             float sigmaRoot = (float)Math.Sqrt(twoSigmaSquare * Math.PI);
             float total = 0.0f;
             float distance = 0.0f;
             int index = 0;
 
-            for (int i = -radius; i <= radius; ++i)
+            for (int i = -_radius; i <= _radius; ++i)
             {
                 distance = i * i;
-                index = i + radius;
-                kernel[index] = (float)Math.Exp(-distance / twoSigmaSquare) / sigmaRoot;
-                total += kernel[index];
+                index = i + _radius;
+                _kernel[index] = (float)Math.Exp(-distance / twoSigmaSquare) / sigmaRoot;
+                total += _kernel[index];
             }
 
-            for (int i = 0; i < kernel.Length; ++i)
-                kernel[i] /= total;
+            for (int i = 0; i < _kernel.Length; ++i)
+                _kernel[i] /= total;
         }
 
         /// <summary>
@@ -230,21 +230,21 @@ namespace GaussianBlur
         /// <param name="textureHeight">The texture height in pixels.</param>
         public void ComputeOffsets(float textureWidth, float textureHeight)
         {
-            offsetsHoriz = null;
-            offsetsHoriz = new Vector2[radius * 2 + 1];
+            _offsetsHoriz = null;
+            _offsetsHoriz = new Vector2[_radius * 2 + 1];
 
-            offsetsVert = null;
-            offsetsVert = new Vector2[radius * 2 + 1];
+            _offsetsVert = null;
+            _offsetsVert = new Vector2[_radius * 2 + 1];
 
             int index = 0;
             float xOffset = 1.0f / textureWidth;
             float yOffset = 1.0f / textureHeight;
 
-            for (int i = -radius; i <= radius; ++i)
+            for (int i = -_radius; i <= _radius; ++i)
             {
-                index = i + radius;
-                offsetsHoriz[index] = new Vector2(i * xOffset, 0.0f);
-                offsetsVert[index] = new Vector2(0.0f, i * yOffset);
+                index = i + _radius;
+                _offsetsHoriz[index] = new Vector2(i * xOffset, 0.0f);
+                _offsetsVert[index] = new Vector2(0.0f, i * yOffset);
             }
         }
 
@@ -266,7 +266,7 @@ namespace GaussianBlur
                                              RenderTarget2D renderTarget2,
                                              SpriteBatch spriteBatch)
         {
-            if (effect == null)
+            if (_effect == null)
                 throw new InvalidOperationException("GaussianBlur.fx effect not loaded.");
 
             Texture2D outputTexture = null;
@@ -276,32 +276,32 @@ namespace GaussianBlur
 
             // Perform horizontal Gaussian blur.
 
-            game.GraphicsDevice.SetRenderTarget(renderTarget1);
+            _game.GraphicsDevice.SetRenderTarget(renderTarget1);
 
-            effect.CurrentTechnique = effect.Techniques["GaussianBlur"];
-            effect.Parameters["weights"].SetValue(kernel);
-            effect.Parameters["colorMapTexture"].SetValue(srcTexture);
-            effect.Parameters["offsets"].SetValue(offsetsHoriz);
+            _effect.CurrentTechnique = _effect.Techniques["GaussianBlur"];
+            _effect.Parameters["weights"].SetValue(_kernel);
+            _effect.Parameters["colorMapTexture"].SetValue(srcTexture);
+            _effect.Parameters["offsets"].SetValue(_offsetsHoriz);
 
-            spriteBatch.Begin(0, BlendState.Opaque, null, null, null, effect);
+            spriteBatch.Begin(0, BlendState.Opaque, null, null, null, _effect);
             spriteBatch.Draw(srcTexture, destRect1, Color.White);
             spriteBatch.End();
 
             // Perform vertical Gaussian blur.
 
-            game.GraphicsDevice.SetRenderTarget(renderTarget2);
+            _game.GraphicsDevice.SetRenderTarget(renderTarget2);
             outputTexture = (Texture2D)renderTarget1;
 
-            effect.Parameters["colorMapTexture"].SetValue(outputTexture);
-            effect.Parameters["offsets"].SetValue(offsetsVert);
+            _effect.Parameters["colorMapTexture"].SetValue(outputTexture);
+            _effect.Parameters["offsets"].SetValue(_offsetsVert);
 
-            spriteBatch.Begin(0, BlendState.Opaque, null, null, null, effect);
+            spriteBatch.Begin(0, BlendState.Opaque, null, null, null, _effect);
             spriteBatch.Draw(outputTexture, destRect2, Color.White);
             spriteBatch.End();
 
             // Return the Gaussian blurred texture.
 
-            game.GraphicsDevice.SetRenderTarget(null);
+            _game.GraphicsDevice.SetRenderTarget(null);
             outputTexture = (Texture2D)renderTarget2;
 
             return outputTexture;
