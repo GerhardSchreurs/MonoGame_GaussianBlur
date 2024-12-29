@@ -174,7 +174,7 @@ namespace GaussianBlur
 
             try
             {
-                _effect = game.Content.Load<Effect>(@"Effects\GaussianBlur");
+                _effect = game.Content.Load<Effect>("GaussianBlur");
             }
             catch (ContentLoadException)
             {
